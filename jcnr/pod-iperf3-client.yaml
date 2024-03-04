@@ -1,0 +1,159 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: 329d09b985d64a09baa52909b5049af7589cb65ca2dcf40df40a002596481d83
+    cni.projectcalico.org/podIP: 192.168.0.62/32
+    cni.projectcalico.org/podIPs: 192.168.0.62/32
+    k8s.v1.cni.cncf.io/network-status: |-
+      [{
+          "name": "k8s-pod-network",
+          "ips": [
+              "192.168.0.62"
+          ],
+          "default": true,
+          "dns": {}
+      },{
+          "name": "jcnr/net-trust",
+          "interface": "net5",
+          "ips": [
+              "111.1.1.4",
+              "abcd::6f01:104"
+          ],
+          "mac": "aa:bb:cc:dd:22:46",
+          "dns": {}
+      }]
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {
+          "name": "net-trust",
+          "interface":"net5",
+          "cni-args": {
+            "interfaceType":"veth",
+            "mac":"aa:bb:cc:dd:22:46",
+            "rd": "11:11",
+            "ipConfig":{
+              "ipv4":{
+                "address":"111.1.1.4/24",
+                "gateway":"111.1.1.2",
+                "routes":[ "111.1.1.0/24"]
+              },
+              "ipv6":{
+                "address":"abcd::111.1.1.4/64",
+                "gateway":"abcd::111.1.1.2",
+                "routes":["abcd::111.1.1.0/64"]
+              }
+            }
+          }
+        }
+      ]
+    k8s.v1.cni.cncf.io/networks-status: |-
+      [{
+          "name": "k8s-pod-network",
+          "ips": [
+              "192.168.0.62"
+          ],
+          "default": true,
+          "dns": {}
+      },{
+          "name": "jcnr/net-trust",
+          "interface": "net5",
+          "ips": [
+              "111.1.1.4",
+              "abcd::6f01:104"
+          ],
+          "mac": "aa:bb:cc:dd:22:46",
+          "dns": {}
+      }]
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{"k8s.v1.cni.cncf.io/networks":"[\n  {\n    \"name\": \"net-trust\",\n    \"interface\":\"net5\",\n    \"cni-args\": {\n      \"interfaceType\":\"veth\",\n      \"mac\":\"aa:bb:cc:dd:22:46\",\n      \"rd\": \"11:11\",\n      \"ipConfig\":{\n        \"ipv4\":{\n          \"address\":\"111.1.1.4/24\",\n          \"gateway\":\"111.1.1.2\",\n          \"routes\":[ \"111.1.1.0/24\"]\n        },\n        \"ipv6\":{\n          \"address\":\"abcd::111.1.1.4/64\",\n          \"gateway\":\"abcd::111.1.1.2\",\n          \"routes\":[\"abcd::111.1.1.0/64\"]\n        }\n      }\n    }\n  }\n]\n"},"name":"iperf3-client","namespace":"jcnr"},"spec":{"containers":[{"command":["sleep","infinity"],"env":[{"name":"KUBERNETES_POD_UID","valueFrom":{"fieldRef":{"fieldPath":"metadata.uid"}}}],"image":"quay.io/wcaban/net-toolbox:latest","imagePullPolicy":"IfNotPresent","name":"hugepages","resources":{"limits":{"hugepages-1Gi":"1Gi"},"requests":{"memory":"1Gi"}},"securityContext":{"capabilities":{"add":["SYS_ADMIN","NET_ADMIN","SYS_NICE","SYSLOG","SYS_PTRACE","SYS_RAWIO"]},"privileged":true},"volumeMounts":[{"mountPath":"/dpdk","name":"dpdk","subPathExpr":"$(KUBERNETES_POD_UID)"},{"mountPath":"/hugepages","name":"hugepages"}]}],"volumes":[{"hostPath":{"path":"/var/run/jcnr/containers"},"name":"dpdk"},{"emptyDir":{"medium":"HugePages"},"name":"hugepages"}]}}
+  creationTimestamp: "2024-02-12T12:50:46Z"
+  name: iperf3-client
+  namespace: jcnr
+spec:
+  containers:
+  - command:
+    - sleep
+    - infinity
+    env:
+    - name: KUBERNETES_POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    image: quay.io/wcaban/net-toolbox:latest
+    imagePullPolicy: IfNotPresent
+    name: hugepages
+    resources:
+      limits:
+        hugepages-1Gi: 1Gi
+      requests:
+        hugepages-1Gi: 1Gi
+        memory: 1Gi
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+        - NET_ADMIN
+        - SYS_NICE
+        - SYSLOG
+        - SYS_PTRACE
+        - SYS_RAWIO
+      privileged: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /dpdk
+      name: dpdk
+      subPathExpr: $(KUBERNETES_POD_UID)
+    - mountPath: /hugepages
+      name: hugepages
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-lns8z
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: abhi-master-node
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - hostPath:
+      path: /var/run/jcnr/containers
+      type: ""
+    name: dpdk
+  - emptyDir:
+      medium: HugePages
+    name: hugepages
+  - name: kube-api-access-lns8z
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace

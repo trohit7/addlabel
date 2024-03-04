@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cni.projectcalico.org/containerID: e947e960e9eecbf72f3c982f2a957d26cef6acb8265a90ecb9e483b788b1f711
+    cni.projectcalico.org/podIP: 192.168.0.38/32
+    cni.projectcalico.org/podIPs: 192.168.0.38/32
+    k8s.v1.cni.cncf.io/network-status: |-
+      [{
+          "name": "k8s-pod-network",
+          "ips": [
+              "192.168.0.38"
+          ],
+          "default": true,
+          "dns": {}
+      }]
+    k8s.v1.cni.cncf.io/networks-status: |-
+      [{
+          "name": "k8s-pod-network",
+          "ips": [
+              "192.168.0.38"
+          ],
+          "default": true,
+          "dns": {}
+      }]
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"name":"netshoot-pod","namespace":"default"},"spec":{"containers":[{"command":["bash","-c","while true; do sleep 60s; done"],"image":"svl-artifactory.juniper.net/atom-docker/cn2/bazel-build/dev/netshoot:v1","imagePullPolicy":"IfNotPresent","name":"toolbox","securityContext":{"capabilities":{"add":["NET_ADMIN"]},"privileged":true}}],"tolerations":[{"effect":"NoSchedule","key":"key","operator":"Equal","value":"value"}]}}
+  creationTimestamp: "2024-02-29T10:56:56Z"
+  name: netshoot-pod
+  namespace: default
+spec:
+  containers:
+  - command:
+    - bash
+    - -c
+    - while true; do sleep 60s; done
+    image: svl-artifactory.juniper.net/atom-docker/cn2/bazel-build/dev/netshoot:v1
+    imagePullPolicy: IfNotPresent
+    name: toolbox
+    resources: {}
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+      privileged: true
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-pcqfc
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: abhi-master-node
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoSchedule
+    key: key
+    operator: Equal
+    value: value
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-pcqfc
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
